@@ -125,11 +125,13 @@ table_trips <- function( pdf_stub ) {
         # The item in question, it5, could either be a tip or boost. If it is a
         #   tip, then there will be more white space between it5 and Total than
         #   between Fare and it5. The opposite will be true if it is Boost
-        fare.pos <- str_locate(e.data[i,], deliv.data[4])
-        it5.pos <- str_locate(e.data[i,], deliv.data[5])
-        total.pos <- str_locate(e.data[i,], deliv.data[6])
-        white.1 <- it5.pos[1,1] - fare.pos[1,2]
-        white.2 <- total.pos[1,1] - it5.pos[1,2]
+        # 11/22/17- patch locate. Values can show up in Trip ID, so get all and
+        #  use the last one.
+        fare.pos <- str_locate_all(e.data[i,], deliv.data[4]) %>% as.data.frame()
+        it5.pos <- str_locate_all(e.data[i,], deliv.data[5]) %>% as.data.frame()
+        total.pos <- str_locate_all(e.data[i,], deliv.data[6]) %>% as.data.frame()
+        white.1 <- it5.pos[nrow(it5.pos),1] - fare.pos[nrow(fare.pos),2]
+        white.2 <- total.pos[nrow(total.pos),1] - it5.pos[nrow(it5.pos),2]
 
         # this won't work if it is a tip being added to a trip from a previous
         #   week because the total and the tip will be equal, so total.pos will
