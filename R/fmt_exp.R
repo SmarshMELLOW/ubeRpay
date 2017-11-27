@@ -20,6 +20,7 @@
 fmt_exp <- function( exp_data, tenQ = FALSE, date_var, cat_var = NULL,
                      price_var, date_fmt = NA ) {
 
+  # this section formats the data ---------------------------------------------
   # make sure there is no dollar sign in the price
   exp_data %<>% mutate_( "px" = as.character( price_var ) ) %>%
     mutate( px2 = gsub("$", "", px, fixed = TRUE),
@@ -40,6 +41,7 @@ fmt_exp <- function( exp_data, tenQ = FALSE, date_var, cat_var = NULL,
       group_by( item, add = TRUE )
   }
 
+  # this section sums up the expenses by grouping input -----------------------
   # if 10q, make quarters and add to grouping list
   if( tenQ == TRUE ) {
     exp_data %<>% mutate( purch_qtr = lubridate::quarter( purch_date) ) %>%
@@ -64,7 +66,7 @@ fmt_exp <- function( exp_data, tenQ = FALSE, date_var, cat_var = NULL,
       q_table <- data_frame( )
 
       for(c in 1:nrow(exp_cats) ) {
-        q_row <- data_frame( item = exp_cats[c,])
+        q_row <- data_frame( item = as.character( exp_cats[c,]) )
         cat_table <- exp_table %>% filter( item == exp_cats[c,])
 
         for(q in 1:4 ) {
@@ -84,7 +86,7 @@ fmt_exp <- function( exp_data, tenQ = FALSE, date_var, cat_var = NULL,
 
     } else {
       # still need quarterly expenses
-      q_table <- data_frame( item = "Expenses")
+      q_table <- data_frame( item = "EXPENSES")
       for(q in 1:4 ) {
         q_cost <- exp_table %>%
           ungroup() %>%
@@ -100,6 +102,31 @@ fmt_exp <- function( exp_data, tenQ = FALSE, date_var, cat_var = NULL,
     }
     exp_table <- q_table  # replace the object with the wide version
   }
+
+  # add a line for total expenditure ------------------------------------------
+  if (tenQ == FALSE) {
+    if( is.null(cat_var) == TRUE) {
+      exp_table %<>%
+        plyr::mutate( item = "EXPENSES") %>%
+        dplyr::select( item, cost )
+    } else{
+      exp_table <- bind_rows(
+        exp_table,
+        data_frame( item = "EXPENSES", cost = sum(exp_table$cost) )
+      )
+    }
+  } else {
+    if( is.null(cat_var) == FALSE) {
+      exp_table <- bind_rows(
+        exp_table,
+        data_frame( item = "EXPENSES", Q1 = sum(exp_table$Q1),
+                    Q2 = sum(exp_table$Q2), Q3 = sum(exp_table$Q3),
+                    Q4 = sum(exp_table$Q4) ) )
+    }
+  }
+  # %>%
+  #   plyr::mutate( item = "EXPENSES") %>%
+  #   dplyr::select( item, cost, everything())
 
   return( exp_table )
 }
