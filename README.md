@@ -10,7 +10,7 @@
 
 <h1>Installation</h1>
 
-<p><code>{r, eval=FALSE}
+<p><code>
 devtools::install_github("SmarshMELLOW/ubeRpay")
 </code></p>
 
@@ -22,15 +22,12 @@ devtools::install_github("SmarshMELLOW/ubeRpay")
 
 <p>Once you have saved all of your pay stubs in a folder, you can batch import them.</p>
 
-<p>```
-    stub.dir &lt;- "/Users/SMARSH/UBER Income/pay statements/"</p>
+<pre><code>stub.dir &lt;- "/Users/SMARSH/UBER Income/pay statements/"
 
-<pre><code>pay.files &lt;- paste0(stub.dir, list.files(stub.dir))
+pay.files &lt;- paste0(stub.dir, list.files(stub.dir))
 
 deliv.data &lt;- batch_table_trips( pay.files )
 </code></pre>
-
-<p>```</p>
 
 <h1>New To Uber</h1>
 
