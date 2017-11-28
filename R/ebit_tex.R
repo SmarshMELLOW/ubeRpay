@@ -15,7 +15,7 @@
 
 ebit_tex <- function( ebit, year = NA ) {
 
-  # first lines, reference note
+  # first lines, reference note -----------------------------------------------
   created <- paste0("% EBIT Table Created by ubeRpay by Sam Marshall ",
                     Sys.time(), "\n" )
   pkg.note <- paste0("% ***Must add before \\begin{document}*** ",
@@ -23,7 +23,7 @@ ebit_tex <- function( ebit, year = NA ) {
 
   note <- paste0( created, pkg.note )
 
-  # table start
+  # table start -------------------------------------------------
   inc_year <- ifelse( is.na( year) == TRUE, year(Sys.Date()), as.character( year) )
   t.head <- paste0(
     "\\begin{table}[h] \\centering \n",
@@ -35,13 +35,70 @@ ebit_tex <- function( ebit, year = NA ) {
   t_col <- ncol(ebit)
   t_row <- nrow(ebit)
 
-  # make the column names -----
-  c_head <- "    &"
-  for( i in 2:(t_col - 1) ) {
-    c_head <- paste0( c_head, " {", names(ebit)[i], "} &")
+  if(t_col == 2) {
+    t.body <- .ann_body(ebit, t_row )
+  } else {
+    # make the column names -----
+    c_head <- "    &"
+    for( i in 2:(t_col - 1) ) {
+      c_head <- paste0( c_head, " {", names(ebit)[i], "} &")
+    }
+    # add in the last one with new line prompt at the end
+    c_head <- paste0(c_head, " {", names(ebit)[t_col], "} \\\\ \n")
+
+    # make the table contents
+    inc.cats <- c("INCOME", "EXPENSES", "EBIT")
+    t_guts <- ""
+    for( r in 1:t_row ) {
+      t_guts <- paste0(
+        t_guts, "    ",
+        ifelse( ebit[r,1] %in% inc.cats,
+                paste0( "\\objsum{", ebit[r,1], "} &"),
+                paste0(ebit[r,1], " &") ) )
+
+      for( c in 2:t_col ) {
+        rc_val <- ifelse(
+          round(ebit[r,c]) == ebit[r,c],
+          paste0(as.character(ebit[r,c]), ".00"),
+          ifelse(round(10*ebit[r,c]) == 10*ebit[r,c],
+                 paste0(as.character(ebit[r,c]), "0"), ebit[r,c]) )
+
+        if( c < t_col ) {
+          t_guts <- paste( t_guts, rc_val, "&", sep = " ")
+        } else {
+          t_guts <- paste( t_guts, rc_val, "\\\\ \n", sep = " ")
+        }
+      }
+
+      if( ebit[r,1] %in% c("INCOME", "EXPENSES") ) {
+        t_guts <- paste0( t_guts, "    \\rule{0pt}{3ex} \n")
+      }
+    }
+
+    t.body <- paste0(
+      "  \\begin{tabular}{@{\\extracolsep{5pt}} >{\\quad}l*{",t_col-1,
+      "}{S[table-format=4.2]}} \n",
+      "    \\toprule \n",
+      c_head,
+      "    \\midrule \n",
+      t_guts)
   }
-  # add in the last one with new line prompt at the end
-  c_head <- paste0(c_head, " {", names(ebit)[t_col], "} \\\\ \n")
+
+  t.foot <- paste0(
+    "    \\hline \\rule{0pt}{1.8ex} \n",
+    "  \\end{tabular} \n",
+    "  \\caption*{} \n",
+    "\\end{table}")
+
+  cat(paste0(note, t.head, t.body, t.foot ) )
+}
+
+# if there are only two columns, then the loop won't work, so do this ---------
+.ann_body <- function(ebit, t_row ) {
+  # make the column names -----
+  c_head <- paste0("    ",
+                   " {", names(ebit)[1], "} &",
+                   " {", names(ebit)[2], "} \\\\ \n")
 
   # make the table contents
   inc.cats <- c("INCOME", "EXPENSES", "EBIT")
@@ -53,19 +110,13 @@ ebit_tex <- function( ebit, year = NA ) {
               paste0( "\\objsum{", ebit[r,1], "} &"),
               paste0(ebit[r,1], " &") ) )
 
-    for( c in 2:t_col ) {
-      rc_val <- ifelse(
-        round(ebit[r,c]) == ebit[r,c],
-        paste0(as.character(ebit[r,c]), ".00"),
-          ifelse(round(10*ebit[r,c]) == 10*ebit[r,c],
-            paste0(as.character(ebit[r,c]), "0"), ebit[r,c]) )
+    rc_val <- ifelse(
+      round(ebit[r,2]) == ebit[r,2],
+      paste0(as.character(ebit[r,2]), ".00"),
+      ifelse(round(10*ebit[r,2]) == 10*ebit[r,2],
+             paste0(as.character(ebit[r,2]), "0"), ebit[r,2]) )
 
-      if( c < t_col ) {
-        t_guts <- paste( t_guts, rc_val, "&", sep = " ")
-      } else {
-        t_guts <- paste( t_guts, rc_val, "\\\\ \n", sep = " ")
-      }
-    }
+    t_guts <- paste( t_guts, rc_val, "\\\\ \n", sep = " ")
 
     if( ebit[r,1] %in% c("INCOME", "EXPENSES") ) {
       t_guts <- paste0( t_guts, "    \\rule{0pt}{3ex} \n")
@@ -73,18 +124,12 @@ ebit_tex <- function( ebit, year = NA ) {
   }
 
   t.body <- paste0(
-    "  \\begin{tabular}{@{\\extracolsep{5pt}} >{\\quad}l*{",t_col-1,
+    "  \\begin{tabular}{@{\\extracolsep{5pt}} >{\\quad}l*{",1,
     "}{S[table-format=4.2]}} \n",
     "    \\toprule \n",
     c_head,
     "    \\midrule \n",
     t_guts)
 
-  t.foot <- paste0(
-    "    \\hline \\rule{0pt}{1.8ex} \n",
-    "  \\end{tabular} \n",
-    "  \\caption*{} \n",
-    "\\end{table}")
-
-  cat(paste0(note, t.head, t.body, t.foot ) )
+  return(t.body)
 }
