@@ -10,7 +10,7 @@
 #' @import dplyr
 #' @import plyr
 #' @import lubridate
-#' @export uber_inc_statement()
+#' @export
 #' @examples
 #' fmt_inc( mydeliveries.df, tenQ = TRUE)
 

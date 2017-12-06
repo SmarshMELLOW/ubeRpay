@@ -12,7 +12,7 @@
 #' @import dplyr
 #' @import plyr
 #' @import lubridate
-#' @export table_trips()
+#' @export
 #' @examples
 #' stub.dir <- "/Users/UBER Income/pay statements/"
 #' pay.files <- paste0( stub.dir, list.files( stub.dir) )

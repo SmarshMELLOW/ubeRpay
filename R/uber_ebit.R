@@ -12,7 +12,7 @@
 #' @import dplyr
 #' @import plyr
 #' @import lubridate
-#' @export uber_ebit()
+#' @export
 #' @examples
 #' uber_ebit( myinc.df, myexp.df, tenQ = TRUE, tex = FALSE)
 

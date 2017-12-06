@@ -13,7 +13,7 @@
 #' @import dplyr
 #' @import plyr
 #' @import lubridate
-#' @export fmt_exp()
+#' @export
 #' @examples
 #' fmt_exp( myexp.df, tenQ = TRUE)
 
