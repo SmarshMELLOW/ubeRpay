@@ -16,6 +16,9 @@ This function takes a dataframe of uber income data and user generated
   expsenses and combines them to make an income statement up to EBIT.
   The statement can be either quarterly or annual (10k or 10q).
 }
+\examples{
+ebit_tex( my10q, year = 2015)
+}
 \keyword{EBIT}
 \keyword{accounting}
 \keyword{latex}

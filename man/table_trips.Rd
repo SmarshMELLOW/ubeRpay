@@ -2,21 +2,23 @@
 % Please edit documentation in R/table_trips.R
 \name{table_trips}
 \alias{table_trips}
-\title{Read pdf pay statement and return trip of tables}
+\title{Read pdf pay statements and return a df of trips}
 \usage{
-table_trips(pdf_stub)
+table_trips(pdf_list)
 }
 \arguments{
-\item{pdf_stub}{the pdf file with the payment info}
+\item{pdf_list}{a list of the pdf files with the payment info (may be a single pdf)}
 }
 \description{
-This function takes a pdf pay statement that is downloaded from uber
+This function takes pdfs of pay statement that are downloaded from uber
   https://partners.uber.com/p3/money/statements/all
   The settings must correspond to: portrait mode (i.e. wide), paper size A4,
   margins none. It returns a table of the trip data.
 }
 \examples{
-table_trips()
+stub.dir <- "/Users/UBER Income/pay statements/"
+pay.files <- paste0( stub.dir, list.files( stub.dir) )
+table_trips( pay.files )
 }
 \keyword{accounting}
 \keyword{pdf}

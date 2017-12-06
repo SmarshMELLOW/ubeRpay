@@ -1,10 +1,10 @@
-#' Read pdf pay statement and return trip of tables
+#' Read pdf pay statements and return a df of trips
 #'
-#' This function takes a pdf pay statement that is downloaded from uber
+#' This function takes pdfs of pay statement that are downloaded from uber
 #'   https://partners.uber.com/p3/money/statements/all
 #'   The settings must correspond to: portrait mode (i.e. wide), paper size A4,
 #'   margins none. It returns a table of the trip data.
-#' @param pdf_stub the pdf file with the payment info
+#' @param pdf_list a list of the pdf files with the payment info (may be a single pdf)
 #' @keywords uber accounting pdf
 #' @import pdftools
 #' @import stringr
@@ -14,9 +14,31 @@
 #' @import lubridate
 #' @export table_trips()
 #' @examples
-#' table_trips()
+#' stub.dir <- "/Users/UBER Income/pay statements/"
+#' pay.files <- paste0( stub.dir, list.files( stub.dir) )
+#' table_trips( pay.files )
 
-table_trips <- function( pdf_stub ) {
+table_trips <- function( pdf_list ) {
+
+  trip_table <- data_frame()
+
+  for(i in 1:length(pdf_list) ) {
+    trip_table <- bind_rows( trip_table, .read_stub( pdf_list[i] ) )
+  }
+
+  # sometimes tips come in late, so add these to the original payments
+  table_out <- trip_table %>%
+    group_by( Date.Time, Trip_ID, Type ) %>%
+    dplyr::summarise( Fare = sum(Fare),
+                      Tips = sum(Tips),
+                      Boost = sum(Boost),
+                      Total = sum(Total) )
+
+  return(table_out)
+}
+
+
+.read_stub <- function( pdf_stub ) {
 
   txt <- pdf_text( pdf_stub )
 
@@ -49,7 +71,7 @@ table_trips <- function( pdf_stub ) {
   data.names <- unlist( str_split( e.data[1,], " ") )
   # are there miscellaneous items? If so then make a table of those
   if( "Misc." %in% data.names ) {
-    misc.data <- table_misc( txt.all )
+    misc.data <- .table_misc( txt.all )
     misc.earn <- TRUE
   } else { misc.earn <- FALSE }
 
@@ -64,7 +86,7 @@ table_trips <- function( pdf_stub ) {
   data.names.6b <- data.names[ ! data.names == "Tips" ]
 
   if( ! "Tips" %in% c(data.names) ) {
-    my.trips <- table_historical( e.data, incl.tips = TRUE )
+    my.trips <- .table_historical( e.data, incl.tips = TRUE )
   } else {
     #----- loop through each line in e.data to get the trips --------------------
     # set the new_page token
@@ -185,7 +207,7 @@ table_trips <- function( pdf_stub ) {
 
 # -----------------------------------------------------------------------------
 # This makes the table for stubs from before tipping --------------------------
-table_historical <- function( txt_data, incl.tips = TRUE ) {
+.table_historical <- function( txt_data, incl.tips = TRUE ) {
 
   data.names <- unlist( str_split( txt_data[1,], " ") )
   data.names <- data.names[ ! data.names %in% c("", "ID", "Earnings", "Misc.")]
@@ -270,7 +292,7 @@ table_historical <- function( txt_data, incl.tips = TRUE ) {
 
 # -----------------------------------------------------------------------------
 # This makes a table for miscellaneous earnings -------------------------------
-table_misc <- function( txt_df ) {
+.table_misc <- function( txt_df ) {
 
   # ----- select the miscellaneous payments portion of the stub ----------
   # find the start of the miscellaneous items and get the pay date

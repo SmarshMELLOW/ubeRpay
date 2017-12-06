@@ -11,7 +11,7 @@
 #' @import plyr
 #' @import lubridate
 #' @export ebit_tex()
-#' @examples
+#' @examples ebit_tex( my10q, year = 2015)
 
 ebit_tex <- function( ebit, year = NA ) {
 
